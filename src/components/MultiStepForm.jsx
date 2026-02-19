@@ -10,8 +10,6 @@ import {
   Microscope, 
   Activity,
   Eye,
-  Syringe,
-  Ear,
   Receipt, 
   FileText, 
   CreditCard, 
@@ -19,8 +17,6 @@ import {
   Plus, 
   Building2, 
   Send,
-  Image as ImageIcon,
-  X,
   Loader2,
   AlertCircle,
   Info,
@@ -130,22 +126,26 @@ const MultiStepForm = () => {
       receipt: files.receipt ? { 
         name: files.receipt.name, 
         size: files.receipt.size, 
-        preview: files.receipt.preview?.startsWith('blob:') ? null : files.receipt.preview 
+        preview: files.receipt.preview // Guardamos el Base64 directamente
       } : null,
       additional: files.additional ? { 
         name: files.additional.name, 
         size: files.additional.size, 
-        preview: files.additional.preview?.startsWith('blob:') ? null : files.additional.preview 
+        preview: files.additional.preview 
       } : null
     };
 
-    localStorage.setItem('reimbursement_form', JSON.stringify({
-      formData,
-      step,
-      bankSelected,
-      personSelected,
-      filesMetadata
-    }));
+    try {
+      localStorage.setItem('reimbursement_form', JSON.stringify({
+        formData,
+        step,
+        bankSelected,
+        personSelected,
+        filesMetadata
+      }));
+    } catch {
+      console.warn("LocalStorage limit reached. Images might be too large to persist across reloads.");
+    }
   }, [formData, step, bankSelected, personSelected, files]);
 
   // Handle initial hydration (solo una vez al montar)
@@ -155,6 +155,40 @@ const MultiStepForm = () => {
     }
   }, [reset, initialSaved?.formData]); 
 
+  // REHIDRATACIÓN: Convierte el Base64 de vuelta a objeto File para poder enviarlo
+  useEffect(() => {
+    const rehydrateFiles = async () => {
+      if (!initialSaved?.filesMetadata) return;
+      
+      const metadata = initialSaved.filesMetadata;
+      const updatedFiles = { receipt: null, additional: null };
+      let hasUpdates = false;
+
+      const restore = async (key) => {
+        if (metadata[key]?.preview?.startsWith('data:')) {
+          try {
+            const res = await fetch(metadata[key].preview);
+            const blob = await res.blob();
+            updatedFiles[key] = {
+              ...metadata[key],
+              file: new File([blob], metadata[key].name, { type: blob.type })
+            };
+            hasUpdates = true;
+          } catch (err) {
+            console.error("Error al recuperar archivo:", err);
+          }
+        }
+      };
+
+      await restore('receipt');
+      await restore('additional');
+      if (hasUpdates) {
+        setFiles(prev => ({ ...prev, ...updatedFiles }));
+      }
+    };
+
+    rehydrateFiles();
+  }, [initialSaved]); // Usamos initialSaved como dependencia estable
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {
@@ -178,16 +212,30 @@ const MultiStepForm = () => {
 
       setIsFileLoading(prev => ({ ...prev, [type]: true }));
       
-      const preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
       const fileSizeFormatted = file.size < 1024 * 1024 
         ? `${(file.size / 1024).toFixed(1)} KB`
         : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+
+      // Convertir a Base64 para persistencia
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Data = event.target.result;
         
-      // Simular carga para el skeleton
-      setTimeout(() => {
-        setFiles(prev => ({ ...prev, [type]: { file, name: file.name, preview, size: fileSizeFormatted } }));
-        setIsFileLoading(prev => ({ ...prev, [type]: false }));
-      }, 800);
+        // Simular carga con skeleton
+        setTimeout(() => {
+          setFiles(prev => ({ 
+            ...prev, 
+            [type]: { 
+              file, 
+              name: file.name, 
+              preview: base64Data, 
+              size: fileSizeFormatted 
+            } 
+          }));
+          setIsFileLoading(prev => ({ ...prev, [type]: false }));
+        }, 800);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
