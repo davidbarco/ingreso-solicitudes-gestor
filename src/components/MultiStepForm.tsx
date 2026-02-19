@@ -393,76 +393,27 @@ const MultiStepForm = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0,0,0,0.85)',
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '2rem',
-              backdropFilter: 'blur(10px)'
-            }}
+            className="fixed inset-0 bg-black/85 z-1000 flex items-center justify-center p-8 backdrop-blur-10"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              style={{
-                background: 'var(--bg-card)',
-                width: '100%',
-                maxWidth: '420px',
-                borderRadius: '28px',
-                border: '1px solid var(--border)',
-                padding: '3rem 2rem',
-                boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.4)',
-                textAlign: 'center',
-                margin: '1rem'
-              }}
+              className="bg-(--bg-card) w-full max-w-[420px] rounded-[28px] border border-(--border) p-12 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.4)] text-center m-4"
             >
-              <div style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: '50%',
-                background: 'rgba(34, 197, 94, 0.1)',
-                color: '#22c55e',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1.5rem',
-                border: '1px solid rgba(34, 197, 94, 0.2)'
-              }}>
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 mx-auto mb-6">
                 <Check size={32} strokeWidth={2.5} />
               </div>
 
-              <h2 style={{
-                fontSize: '1.5rem',
-                color: 'var(--text-main)',
-                fontWeight: '700',
-                marginBottom: '0.75rem',
-                lineHeight: '1.2'
-              }}>
+              <h2 className="text-2xl font-bold text-(--text-main) mb-3 leading-tight">
                 ¡Solicitud enviada con éxito!
               </h2>
 
-              <p style={{
-                color: 'var(--text-muted)',
-                fontSize: '0.95rem',
-                marginBottom: '2rem',
-                lineHeight: '1.5'
-              }}>
+              <p className="text-(--text-muted) text-sm mb-8 leading-relaxed">
                 Tu reembolso ha sido ingresado correctamente y está siendo procesado por nuestro equipo.
               </p>
 
               <button
-                style={{
-                  width: '100%',
-                  padding: '1rem',
-                  fontSize: '1rem'
-                }}
+                className="w-full p-4 text-base"
                 onClick={() => {
                   localStorage.removeItem('reimbursement_form');
                   window.location.reload();
@@ -482,60 +433,27 @@ const MultiStepForm = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0,0,0,0.85)',
-              zIndex: 1100,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '2rem',
-              backdropFilter: 'blur(10px)'
-            }}
+            className="fixed inset-0 bg-black/85 z-1100 flex items-center justify-center p-8 backdrop-blur-10"
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              style={{
-                background: 'var(--bg-card)',
-                width: '100%',
-                maxWidth: '500px',
-                borderRadius: '24px',
-                border: '1px solid var(--border)',
-                padding: '2rem 1.5rem',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                textAlign: 'center',
-                margin: '1rem'
-              }}
+              className="bg-(--bg-card) w-full max-w-[500px] rounded-[24px] border border-(--border) p-8 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] text-center m-4"
             >
-              <div style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: '50%',
-                background: 'rgba(239, 68, 68, 0.1)',
-                color: '#ef4444',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1.5rem'
-              }}>
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 text-red-500 mx-auto mb-6">
                 <AlertCircle size={32} />
               </div>
 
-              <h2 style={{ fontSize: '1.5rem', color: 'var(--text-main)', fontWeight: '700', marginBottom: '1rem' }}>
+              <h2 className="text-2xl font-bold text-(--text-main) mb-4">
                 Atención
               </h2>
 
-              <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: '1.6' }}>
+              <p className="text-(--text-muted) mb-8 leading-relaxed">
                 {errorMessage}
               </p>
 
               <button
-                style={{ width: '100%', padding: '1rem', background: '#ef4444', border: 'none' }}
+                className="w-full p-4 bg-red-500 border-none text-white"
                 onClick={() => setShowErrorModal(false)}
               >
                 Entendido
@@ -557,7 +475,7 @@ const MultiStepForm = () => {
           {/* STEP 1: Personal Data */}
           {step === 1 && (
             <form onSubmit={handleSubmit(nextStep)}>
-              <h2 style={{ marginBottom: '1.5rem' }}>Datos Personales</h2>
+              <h2 className="mb-6">Datos Personales</h2>
               <div className="responsive-grid grid-2">
                 <FormInput<FormFields>
                   label="Nombre"
@@ -635,8 +553,8 @@ const MultiStepForm = () => {
           {/* STEP 2: Validation Card */}
           {step === 2 && (
             <div>
-              <h2 style={{ marginBottom: '1rem' }}>Selecciona a la persona que recibió la atención</h2>
-              <p style={{ marginBottom: '2rem', fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+              <h2 className="mb-4">Selecciona a la persona que recibió la atención</h2>
+              <p className="text-(--text-muted) text-sm leading-relaxed mb-8">
                 Tu solicitud de reembolso será resuelta en hasta 7 días hábiles. En el caso de prestaciones hospitalarias, el plazo puede extenderse hasta 20 días hábiles.
               </p>
 
@@ -645,7 +563,7 @@ const MultiStepForm = () => {
                 tabIndex={0}
                 aria-pressed={personSelected}
                 aria-label={`Seleccionar a ${formData.firstName} ${formData.lastName} como beneficiario`}
-                className={`selectable-card ${personSelected ? 'selected' : ''}`}
+                className={`selectable-card max-w-[400px] mx-auto relative transition-all duration-300 cursor-pointer ${personSelected ? 'selected' : ''}`}
                 onClick={() => setPersonSelected(true)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -653,42 +571,25 @@ const MultiStepForm = () => {
                     setPersonSelected(true);
                   }
                 }}
-                style={{
-                  maxWidth: '400px',
-                  margin: '0 auto',
-                  border: personSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
-                  position: 'relative',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
               >
                 <div className="icon-wrapper">
                   <User size={24} />
                 </div>
-                <div style={{ textAlign: 'center' }}>
-                  <h3 style={{ color: 'var(--text-main)', fontSize: '1.2rem', marginBottom: '0.5rem' }}>{formData.firstName} {formData.lastName}</h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{formData.rut}</p>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{formData.email}</p>
+                <div className="text-center">
+                  <h3 className="text-(--text-main) text-xl mb-2">{formData.firstName} {formData.lastName}</h3>
+                  <p className="text-(--text-muted) text-sm">{formData.rut}</p>
+                  <p className="text-(--text-muted) text-sm">{formData.email}</p>
                 </div>
                 <div className="badge">Titular</div>
 
                 {personSelected ? (
-                  <div style={{
-                    marginTop: '1.5rem',
-                    color: 'var(--primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    fontWeight: '600'
-                  }}>
+                  <div className="flex items-center justify-center gap-1 mt-6 text-(--primary) font-semibold">
                     <Check size={18} /> Seleccionado
                   </div>
                 ) : (
                   <button
                     type="button"
-                    className="secondary"
-                    style={{ marginTop: '1.5rem', width: '100%', pointerEvents: 'none' }}
+                    className="secondary mt-6 w-full pointer-events-none"
                   >
                     Hacer clic para seleccionar
                   </button>
@@ -703,10 +604,7 @@ const MultiStepForm = () => {
                   type="button"
                   onClick={() => nextStep({})}
                   disabled={!personSelected}
-                  style={{
-                    opacity: personSelected ? 1 : 0.5,
-                    cursor: personSelected ? 'pointer' : 'not-allowed'
-                  }}
+                  className={personSelected ? '' : 'opacity-50 cursor-not-allowed'}
                 >
                   Siguiente <ChevronRight size={18} />
                 </button>
@@ -717,8 +615,8 @@ const MultiStepForm = () => {
           {/* STEP 3: Service Selection */}
           {step === 3 && (
             <div>
-              <h2 style={{ marginBottom: '0.5rem' }}>Tipo de Servicio</h2>
-              <p style={{ marginBottom: '2rem' }}>Selecciona el tipo de atención médica recibida.</p>
+              <h2 className="mb-2">Tipo de Servicio</h2>
+              <p className="mb-8">Selecciona el tipo de atención médica recibida.</p>
 
               <div className="grid-cards">
                 <div
@@ -741,7 +639,7 @@ const MultiStepForm = () => {
                   <h3>Consultas Médicas</h3>
                   <p>Reembolso de bonos y boletas de consultas.</p>
                   {formData.serviceType === 'consultas' && (
-                    <div style={{ marginTop: '0.5rem', color: 'var(--primary)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div className="flex items-center justify-center gap-1 mt-2 text-(--primary) font-semibold">
                       <Check size={16} /> Seleccionado
                     </div>
                   )}
@@ -774,10 +672,7 @@ const MultiStepForm = () => {
                   type="button"
                   onClick={() => nextStep({})}
                   disabled={!formData.serviceType}
-                  style={{
-                    opacity: formData.serviceType ? 1 : 0.5,
-                    cursor: formData.serviceType ? 'pointer' : 'not-allowed'
-                  }}
+                  className={formData.serviceType ? '' : 'opacity-50 cursor-not-allowed'}
                 >
                   Siguiente <ChevronRight size={18} />
                 </button>
@@ -788,10 +683,10 @@ const MultiStepForm = () => {
           {/* STEP 4: Receipt Type */}
           {step === 4 && (
             <div>
-              <h2 style={{ marginBottom: '0.5rem' }}>Tipo de Comprobante</h2>
-              <p style={{ marginBottom: '2rem' }}>Indica el documento que adjuntarás para el reembolso.</p>
+              <h2 className="mb-2">Tipo de Comprobante</h2>
+              <p className="mb-8">Indica el documento que adjuntarás para el reembolso.</p>
 
-              <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+              <div className="grid-cards">
                 <div
                   role="button"
                   tabIndex={0}
@@ -812,7 +707,7 @@ const MultiStepForm = () => {
                   <h3>Otras Boletas</h3>
                   <p>Boletas de farmacia, insumos o servicios médicos.</p>
                   {formData.receiptType === 'boletas' && (
-                    <div style={{ marginTop: '0.5rem', color: 'var(--primary)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div className="flex items-center justify-center gap-1 mt-2 text-(--primary) font-semibold">
                       <Check size={16} /> Seleccionado
                     </div>
                   )}
@@ -845,10 +740,7 @@ const MultiStepForm = () => {
                   type="button"
                   onClick={() => nextStep({})}
                   disabled={!formData.receiptType}
-                  style={{
-                    opacity: formData.receiptType ? 1 : 0.5,
-                    cursor: formData.receiptType ? 'pointer' : 'not-allowed'
-                  }}
+                  className={formData.receiptType ? '' : 'opacity-50 cursor-not-allowed'}
                 >
                   Siguiente <ChevronRight size={18} />
                 </button>
@@ -866,7 +758,7 @@ const MultiStepForm = () => {
               }
               nextStep(data);
             })}>
-              <h2 style={{ marginBottom: '1.5rem' }}>Detalles de la Boleta</h2>
+              <h2 className="mb-6">Detalles de la Boleta</h2>
 
               <div className="responsive-grid grid-2">
                 <FormInput<FormFields>
@@ -922,57 +814,38 @@ const MultiStepForm = () => {
               </div>
 
               {/* Información sobre carga de archivos */}
-              <div style={{
-                background: 'rgba(220, 38, 38, 0.05)',
-                border: '1px solid rgba(220, 38, 38, 0.1)',
-                borderRadius: '16px',
-                padding: '1.25rem',
-                marginTop: '1.5rem',
-                display: 'flex',
-                gap: '1rem',
-                alignItems: 'flex-start'
-              }}>
-                <div style={{
-                  background: 'rgba(220, 38, 38, 0.1)',
-                  color: 'var(--primary)',
-                  padding: '8px',
-                  borderRadius: '10px',
-                  display: 'flex'
-                }}>
+              <div className="flex gap-4 items-start rounded-2xl p-5 mt-6 border border-red-500/10 bg-red-500/5">
+                <div className="flex p-2 rounded-lg bg-red-500/10 text-(--primary)">
                   <Info size={20} />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ color: 'var(--text-main)', fontSize: '0.95rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-(--text-main) mb-2">
                     Adjunta solo una boleta por solicitud
                   </p>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                  <p className="text-xs text-(--text-muted) mb-4">
                     Todos los documentos que cargues deben tener las siguientes cualidades:
                   </p>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '0.6rem 1.5rem'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} /> Imagen Limpia
+                  <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-y-2.5 gap-x-6">
+                    <div className="flex items-center gap-2 text-xs text-(--text-muted)">
+                      <div className="w-1.5 h-1.5 rounded-full bg-(--primary)" /> Imagen Limpia
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} /> Solo imagen de la boleta
+                    <div className="flex items-center gap-2 text-xs text-(--text-muted)">
+                      <div className="w-1.5 h-1.5 rounded-full bg-(--primary)" /> Solo imagen de la boleta
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} /> Imagen de frente y no de perspectiva
+                    <div className="flex items-center gap-2 text-xs text-(--text-muted)">
+                      <div className="w-1.5 h-1.5 rounded-full bg-(--primary)" /> Imagen de frente y no de perspectiva
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} /> Buena iluminación
+                    <div className="flex items-center gap-2 text-xs text-(--text-muted)">
+                      <div className="w-1.5 h-1.5 rounded-full bg-(--primary)" /> Buena iluminación
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} /> Datos del médico legibles
+                    <div className="flex items-center gap-2 text-xs text-(--text-muted)">
+                      <div className="w-1.5 h-1.5 rounded-full bg-(--primary)" /> Datos del médico legibles
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="responsive-grid grid-2" style={{ marginTop: '1.5rem' }}>
+              <div className="responsive-grid grid-2 mt-6">
                 {/* Receipt Upload */}
                 <div
                   className="upload-card"
@@ -998,23 +871,23 @@ const MultiStepForm = () => {
                     <Camera size={24} />
                   </div>
                   {isFileLoading.receipt ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', maxWidth: '300px' }}>
-                      <div className="shimmer" style={{ width: '40px', height: '40px', borderRadius: '6px', flexShrink: 0 }}></div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
-                        <div className="shimmer" style={{ width: '60%', height: '14px', borderRadius: '4px' }}></div>
-                        <div className="shimmer" style={{ width: '40%', height: '10px', borderRadius: '4px' }}></div>
+                    <div className="flex items-center gap-4 w-full max-w-[300px]">
+                      <div className="shimmer rounded-md shrink-0 w-10 h-10"></div>
+                      <div className="flex flex-col gap-1 w-full">
+                        <div className="shimmer rounded-sm w-3/5 h-3.5"></div>
+                        <div className="shimmer rounded-sm w-2/5 h-2.5"></div>
                       </div>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div className="flex items-center gap-4">
                       {files.receipt?.preview && (
-                        <div style={{ width: '40px', height: '40px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border)', flexShrink: 0 }}>
-                          <img src={files.receipt.preview} alt="Vista previa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div className="w-10 h-10 rounded overflow-hidden border border-(--border) shrink-0 flex items-center justify-center bg-(--bg-input)">
+                          <img src={files.receipt.preview} alt="Vista previa" className="w-full h-full object-cover" />
                         </div>
                       )}
                       <div>
-                        <h4 style={{ fontSize: '0.9rem' }}>{files.receipt ? 'Boleta Cargada' : <>Foto de Boleta <span style={{ color: '#ef4444' }}>*</span></>}</h4>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        <h4 className="text-sm">{files.receipt ? 'Boleta Cargada' : <>Foto de Boleta <span className="text-red-500">*</span></>}</h4>
+                        <p className="text-xs text-(--text-muted)">
                           {files.receipt ? `${files.receipt.name} (${files.receipt.size})` : 'JPG/PNG/PDF. Máximo 5 mb.'}
                         </p>
                       </div>
@@ -1047,23 +920,23 @@ const MultiStepForm = () => {
                     <Plus size={24} />
                   </div>
                   {isFileLoading.additional ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', maxWidth: '300px' }}>
-                      <div className="shimmer" style={{ width: '40px', height: '40px', borderRadius: '6px', flexShrink: 0 }}></div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
-                        <div className="shimmer" style={{ width: '60%', height: '14px', borderRadius: '4px' }}></div>
-                        <div className="shimmer" style={{ width: '40%', height: '10px', borderRadius: '4px' }}></div>
+                    <div className="flex items-center gap-4 w-full max-w-[300px]">
+                      <div className="shimmer rounded-md shrink-0 w-10 h-10"></div>
+                      <div className="flex flex-col gap-1 w-full">
+                        <div className="shimmer rounded-sm w-3/5 h-3.5"></div>
+                        <div className="shimmer rounded-sm w-2/5 h-2.5"></div>
                       </div>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div className="flex items-center gap-4">
                       {files.additional?.preview && (
-                        <div style={{ width: '40px', height: '40px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border)', flexShrink: 0 }}>
-                          <img src={files.additional.preview} alt="Vista previa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div className="w-10 h-10 rounded overflow-hidden border border-(--border) shrink-0 flex items-center justify-center bg-(--bg-input)">
+                          <img src={files.additional.preview} alt="Vista previa" className="w-full h-full object-cover" />
                         </div>
                       )}
                       <div>
-                        <h4 style={{ fontSize: '0.9rem' }}>{files.additional ? 'Doc. Adicional' : 'Foto Adicional'}</h4>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        <h4 className="text-sm">{files.additional ? 'Doc. Adicional' : 'Foto Adicional'}</h4>
+                        <p className="text-xs text-(--text-muted)">
                           {files.additional ? `${files.additional.name} (${files.additional.size})` : 'JPG/PNG/PDF. Máximo 5 mb.'}
                         </p>
                       </div>
@@ -1086,8 +959,8 @@ const MultiStepForm = () => {
           {/* STEP 6: Bank Info */}
           {step === 6 && (
             <div>
-              <h2 style={{ marginBottom: '0.5rem' }}>Selecciona la cuenta de destino del reembolso</h2>
-              <p style={{ marginBottom: '2rem' }}>Los fondos serán depositados en la siguiente cuenta:</p>
+              <h2 className="mb-2">Selecciona la cuenta de destino del reembolso</h2>
+              <p className="mb-8">Los fondos serán depositados en la siguiente cuenta:</p>
 
               <div
                 className={`selectable-card ${bankSelected ? 'selected' : ''}`}
@@ -1172,46 +1045,30 @@ const MultiStepForm = () => {
                 </div>
               </div>
 
-              <div className="responsive-grid grid-2" style={{ marginTop: '2rem' }}>
+              <div className="responsive-grid grid-2 mt-8">
                 <div className="form-group">
-                  <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem', display: 'block' }}>Correo electrónico</label>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '12px',
-                    padding: '0.75rem 1rem',
-                    gap: '0.75rem'
-                  }}>
+                  <label className="text-xs text-(--text-muted) block mb-2">Correo electrónico</label>
+                  <div className="flex items-center gap-3 rounded-[12px] p-3 border border-(--border) bg-white/5">
                     <Mail size={18} color="var(--text-muted)" />
                     <input
                       disabled
                       value="pedro.gonzalez@gmail.com"
-                      style={{ background: 'none', border: 'none', color: 'var(--text-main)', width: '100%', outline: 'none', fontSize: '0.9rem' }}
+                      className="w-full bg-none border-none text-(--text-main) outline-none text-sm"
                     />
-                    <Pencil size={14} color="var(--primary)" style={{ opacity: 0.5 }} />
+                    <Pencil size={14} color="var(--primary)" className="opacity-50" />
                   </div>
                 </div>
 
                 <div className="form-group">
-                  <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem', display: 'block' }}>Teléfono celular</label>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '12px',
-                    padding: '0.75rem 1rem',
-                    gap: '0.75rem'
-                  }}>
+                  <label className="text-xs text-(--text-muted) block mb-2">Teléfono celular</label>
+                  <div className="flex items-center gap-3 rounded-[12px] p-3 border border-(--border) bg-white/5">
                     <Phone size={18} color="var(--text-muted)" />
                     <input
                       disabled
                       value="967047364"
-                      style={{ background: 'none', border: 'none', color: 'var(--text-main)', width: '100%', outline: 'none', fontSize: '0.9rem' }}
+                      className="w-full bg-none border-none text-(--text-main) outline-none text-sm"
                     />
-                    <Pencil size={14} color="var(--primary)" style={{ opacity: 0.5 }} />
+                    <Pencil size={14} color="var(--primary)" className="opacity-50" />
                   </div>
                 </div>
               </div>
@@ -1224,10 +1081,7 @@ const MultiStepForm = () => {
                   type="button"
                   onClick={() => nextStep({})}
                   disabled={!bankSelected}
-                  style={{
-                    opacity: bankSelected ? 1 : 0.5,
-                    cursor: bankSelected ? 'pointer' : 'not-allowed'
-                  }}
+                  className={bankSelected ? '' : 'opacity-50 cursor-not-allowed'}
                 >
                   Resumen <ChevronRight size={18} />
                 </button>
@@ -1243,13 +1097,12 @@ const MultiStepForm = () => {
 
               <div className="summary-container">
                 <div className="summary-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{ margin: 0 }}>Información Personal</h4>
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="m-0">Información Personal</h4>
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className="secondary"
-                      style={{ padding: '0.4rem', borderRadius: '50%', width: '32px', height: '32px' }}
+                      className="secondary p-1 rounded-full w-8 h-8"
                       aria-label="Editar información personal"
                     >
                       <Pencil size={14} />
@@ -1276,14 +1129,13 @@ const MultiStepForm = () => {
                 </div>
 
                 <div className="summary-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{ margin: 0 }}>Atención y Pago</h4>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="m-0">Atención y Pago</h4>
+                    <div className="flex gap-2">
                       <button
                         type="button"
                         onClick={() => setStep(3)}
-                        className="secondary"
-                        style={{ padding: '0.4rem', borderRadius: '50%', width: '32px', height: '32px' }}
+                        className="secondary p-1 rounded-full w-8 h-8"
                         aria-label="Editar tipo de servicio"
                       >
                         <Pencil size={14} />
@@ -1303,13 +1155,12 @@ const MultiStepForm = () => {
                 </div>
 
                 <div className="summary-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{ margin: 0 }}>Datos de la Boleta</h4>
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="m-0">Datos de la Boleta</h4>
                     <button
                       type="button"
                       onClick={() => setStep(5)}
-                      className="secondary"
-                      style={{ padding: '0.4rem', borderRadius: '50%', width: '32px', height: '32px' }}
+                      className="secondary p-1 rounded-full w-8 h-8"
                       aria-label="Editar datos de la boleta"
                     >
                       <Pencil size={14} />
@@ -1338,29 +1189,29 @@ const MultiStepForm = () => {
                 <div className="summary-group">
                   <h4>Documentos Cargados</h4>
                   <div className="summary-grid">
-                    <div className="summary-item" style={{ flexDirection: 'row', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border)', flexShrink: 0, background: 'var(--bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="summary-item flex flex-row items-center gap-4">
+                      <div className="w-10 h-10 rounded overflow-hidden border border-(--border) shrink-0 bg-(--bg-input) flex items-center justify-center">
                         {files.receipt?.preview ? (
-                          <img src={files.receipt.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={files.receipt.preview} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <Camera size={20} color="var(--text-muted)" />
                         )}
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div className="flex flex-col">
                         <label>Boleta</label>
                         <span>{files.receipt?.name} ({files.receipt?.size})</span>
                       </div>
                     </div>
                     {files.additional && (
-                      <div className="summary-item" style={{ flexDirection: 'row', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border)', flexShrink: 0, background: 'var(--bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div className="summary-item flex flex-row items-center gap-4">
+                        <div className="w-10 h-10 rounded overflow-hidden border border-(--border) shrink-0 bg-(--bg-input) flex items-center justify-center">
                           {files.additional.preview ? (
-                            <img src={files.additional.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={files.additional.preview} alt="" className="w-full h-full object-cover" />
                           ) : (
                             <FileText size={20} color="var(--text-muted)" />
                           )}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div className="flex flex-col">
                           <label>Doc. Adicional</label>
                           <span>{files.additional.name} ({files.additional.size})</span>
                         </div>
@@ -1370,13 +1221,12 @@ const MultiStepForm = () => {
                 </div>
 
                 <div className="summary-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{ margin: 0 }}>Datos de depósito</h4>
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="m-0">Datos de depósito</h4>
                     <button
                       type="button"
                       onClick={() => setStep(6)}
-                      className="secondary"
-                      style={{ padding: '0.4rem', borderRadius: '50%', width: '32px', height: '32px' }}
+                      className="secondary p-1 rounded-full w-8 h-8"
                       aria-label="Editar datos de depósito"
                     >
                       <Pencil size={14} />
@@ -1411,7 +1261,7 @@ const MultiStepForm = () => {
                   type="button"
                   onClick={handleSubmit(onSubmit)}
                   disabled={isSubmitting}
-                  style={{ background: 'var(--primary-hover)', paddingLeft: '2.5rem', paddingRight: '2.5rem', minWidth: '180px' }}
+                  className="bg-(--primary-hover) px-10 min-w-[180px]"
                 >
                   {isSubmitting ? (
                     <>
@@ -1430,21 +1280,11 @@ const MultiStepForm = () => {
         </motion.div>
       </AnimatePresence>
 
-      <div style={{
-        marginTop: '3.5rem',
-        paddingTop: '2rem',
-        borderTop: '1px solid var(--border)',
-        textAlign: 'center',
-        color: 'var(--text-muted)',
-        fontSize: '0.9rem',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.5rem'
-      }}>
-        <p style={{ fontWeight: '500', color: 'var(--text-main)' }}>
+      <div className="flex flex-col gap-2 mt-14 pt-8 border-t border-(--border) text-center text-(--text-muted) text-sm">
+        <p className="m-0 font-medium text-(--text-main)">
           Paso {step} de {steps.length} — {steps[step - 1]}
         </p>
-        <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+        <p className="text-xs opacity-70">
           © {new Date().getFullYear()} Plataforma de Gestión de Reembolsos
         </p>
       </div>
