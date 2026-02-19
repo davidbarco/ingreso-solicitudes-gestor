@@ -24,7 +24,7 @@ export async function submitReimbursementRequest(
       folioPam: formData.receiptNumber || '',
       rutMedico: formData.docRut || '',
       rutCentro: formData.centerRut || '',
-      numeroBoleta: `$${formData.receiptNumber}`
+      numeroBoleta: `${formData.receiptNumber}`
     }
   };
 

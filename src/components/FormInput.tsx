@@ -19,11 +19,19 @@ const FormInput = <T extends FieldValues>({
   validation = {},
   ...props
 }: FormInputProps<T>) => {
+  const getInputMode = (): InputHTMLAttributes<HTMLInputElement>['inputMode'] => {
+    if (type === 'tel') return 'tel';
+    if (type === 'email') return 'email';
+    if (type === 'number') return 'numeric';
+    return undefined;
+  };
+
   return (
     <div className="form-group">
       <label htmlFor={name}>{label}</label>
       <input
         id={name}
+        inputMode={getInputMode()}
         type={type}
         {...register(name, validation)}
         {...props}
