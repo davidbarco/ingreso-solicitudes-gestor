@@ -25,97 +25,18 @@ import {
   Pencil
 } from 'lucide-react';
 import FormInput from './FormInput';
-
-interface FormFields {
-  firstName: string;
-  lastName: string;
-  rut: string;
-  email: string;
-  phone: string;
-  docRut: string;
-  centerRut: string;
-  amount: string;
-  date: string;
-  receiptNumber: string;
-  [key: string]: string;
-}
-
-interface FileEntry {
-  file?: File;
-  name: string;
-  preview: string;
-  size: string;
-}
-
-interface FilesState {
-  receipt: FileEntry | null;
-  additional: FileEntry | null;
-}
-
-interface SavedState {
-  formData?: Partial<FormFields>;
-  step?: number;
-  bankSelected?: boolean;
-  personSelected?: boolean;
-  filesMetadata?: FilesState;
-}
-
-const formatRut = (rut: string): string => {
-  if (!rut) return "";
-  let value = rut.replace(/\D/g, "");
-  if (value.length < 2) return value;
-
-  const dv = value.slice(-1);
-  const body = value.slice(0, -1);
-
-  const formattedBody = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return `${formattedBody}-${dv}`;
-};
-
-const formatPhone = (phone: string): string => {
-  if (!phone) return "+56 9 ";
-  let value = phone.replace(/\D/g, "");
-  if (value.startsWith("569")) {
-    value = value.slice(3);
-  } else if (value.startsWith("9")) {
-    value = value.slice(1);
-  }
-
-  const part1 = value.slice(0, 4);
-  const part2 = value.slice(4, 8);
-
-  let res = "+56 9 ";
-  if (part1) res += part1;
-  if (part2) res += " " + part2;
-  return res;
-};
-
-const validateRut = (rut: string): boolean => {
-  if (!rut) return true;
-  const cleanRut = rut.replace(/\./g, "").replace(/-/g, "");
-  if (cleanRut.length < 8) return false;
-
-  const body = cleanRut.slice(0, -1);
-  const dv = cleanRut.slice(-1).toUpperCase();
-
-  let sum = 0;
-  let multiplier = 2;
-
-  for (let i = body.length - 1; i >= 0; i--) {
-    sum += parseInt(body[i]!) * multiplier;
-    multiplier = multiplier === 7 ? 2 : multiplier + 1;
-  }
-
-  const expectedDv = 11 - (sum % 11);
-  const dvChar = expectedDv === 11 ? "0" : expectedDv === 10 ? "K" : expectedDv.toString();
-
-  return dv === dvChar;
-};
+import { FormFields, FilesState, SavedState } from '../types/form.types';
+import { STORAGE_KEY, ALLOWED_FILE_TYPES, MAX_FILE_SIZE_BYTES } from '../constants/api.constants';
+import { STEPS, FILE_UPLOAD_SKELETON_DELAY_MS } from '../constants/form.constants';
+import { formatRut, validateRut } from '../utils/rut.utils';
+import { formatPhone } from '../utils/phone.utils';
+import { formatFileSize } from '../utils/file.utils';
+import { submitReimbursementRequest } from '../services/request.service';
 
 const MultiStepForm = () => {
   // Estabilizamos la carga inicial para evitar bucles
   const [initialSaved] = useState<SavedState | null>(() => {
-    const saved = localStorage.getItem('reimbursement_form');
+    const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         return JSON.parse(saved) as SavedState;
@@ -170,7 +91,7 @@ const MultiStepForm = () => {
     };
 
     try {
-      localStorage.setItem('reimbursement_form', JSON.stringify({
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
         formData,
         step,
         bankSelected,
@@ -228,17 +149,14 @@ const MultiStepForm = () => {
     const file = e.target.files?.[0];
     if (file) {
       // Validaciones
-      const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-      const maxSize = 5 * 1024 * 1024; // 5MB
-
-      if (!allowedTypes.includes(file.type)) {
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
         setErrorMessage("Formato no permitido. Por favor usa JPG, PNG o PDF.");
         setShowErrorModal(true);
         e.target.value = '';
         return;
       }
 
-      if (file.size > maxSize) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
         setErrorMessage("El archivo es demasiado grande. El máximo permitido es 5 MB.");
         setShowErrorModal(true);
         e.target.value = '';
@@ -247,9 +165,7 @@ const MultiStepForm = () => {
 
       setIsFileLoading(prev => ({ ...prev, [type]: true }));
 
-      const fileSizeFormatted = file.size < 1024 * 1024
-        ? `${(file.size / 1024).toFixed(1)} KB`
-        : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+      const fileSizeFormatted = formatFileSize(file.size);
 
       // Convertir a Base64 para persistencia
       const reader = new FileReader();
@@ -268,7 +184,7 @@ const MultiStepForm = () => {
             }
           }));
           setIsFileLoading(prev => ({ ...prev, [type]: false }));
-        }, 800);
+        }, FILE_UPLOAD_SKELETON_DELAY_MS);
       };
       reader.readAsDataURL(file);
     }
@@ -286,63 +202,9 @@ const MultiStepForm = () => {
     const fullData = { ...formData, ...finalData };
     console.log("Submitting full form data:", fullData);
 
-    // Preparar el objeto request según la estructura de Postman
-    const requestBody = {
-      tipologyCode: "REEMBOLSO-CONSULTAMEDICA",
-      comment: `Solicitud de Reembolso - ${fullData.serviceLabel}`,
-      rutRequester: fullData.rut,
-      contactEmail: fullData.email,
-      createdBy: `${fullData.firstName || ''} ${fullData.lastName || ''}`.trim(),
-      data: {
-        nationalId: "11223344-K",
-        prestador: "isapre prueba",
-        tipoSolicitud: fullData.serviceLabel,
-        montoSolicitado: `$${fullData.amount}`,
-        diagnosticoIngresado: fullData.serviceLabel,
-        descripcion: `Reembolso por ${fullData.serviceLabel || 'Servicio'} - Documento N° ${fullData.receiptNumber}`,
-        fechaPrestacion: fullData.date,
-        folioColilla: fullData.receiptNumber,
-        folioPam: fullData.receiptNumber,
-        rutMedico: fullData.docRut,
-        rutCentro: fullData.centerRut,
-        numeroBoleta: `$${fullData.receiptNumber}`
-      }
-    };
-
-    const apiBody = new FormData();
-    // Añadir el JSON como string en la llave 'request'
-    apiBody.append('request', JSON.stringify(requestBody));
-
-    // Añadir archivos si existen
-    if (files.receipt?.file) {
-      apiBody.append('document', files.receipt.file);
-    }
-    if (files.additional?.file) {
-      apiBody.append('document', files.additional.file);
-    }
-
     setIsSubmitting(true);
     try {
-      const response = await fetch('https://qa.api.gestor.seiza-ti.cl/request?client-id=4b9b9ab5b734408d915ec31751bbf114', {
-        method: 'POST',
-        body: apiBody
-      });
-
-      if (!response.ok) {
-        throw new Error('Error en la respuesta del servidor');
-      }
-
-      // Intentar parsear JSON, pero manejar si viene vacío
-      const text = await response.text();
-      if (text) {
-        try {
-          const result = JSON.parse(text);
-          console.log("Success:", result);
-        } catch {
-          console.warn("Response body is not JSON:", text);
-        }
-      }
-
+      await submitReimbursementRequest(fullData, files);
       // Mostrar el modal de éxito
       setShowSuccessModal(true);
     } catch (error) {
@@ -354,21 +216,11 @@ const MultiStepForm = () => {
     }
   };
 
-  const steps = [
-    "Datos",
-    "Validación",
-    "Servicio",
-    "Comprobante",
-    "Detalles",
-    "Pago",
-    "Resumen"
-  ];
-
   // --- RENDERING HELPERS ---
 
   const renderStepHeader = () => (
     <div className="steps-container">
-      {steps.map((label, index) => (
+      {STEPS.map((label, index) => (
         <div
           key={index}
           className={`step-item ${step === index + 1 ? 'active' : ''} ${step > index + 1 ? 'completed' : ''}`}
@@ -415,7 +267,7 @@ const MultiStepForm = () => {
               <button
                 className="w-full p-4 text-base"
                 onClick={() => {
-                  localStorage.removeItem('reimbursement_form');
+                  localStorage.removeItem(STORAGE_KEY);
                   window.location.reload();
                 }}
               >
@@ -1282,7 +1134,7 @@ const MultiStepForm = () => {
 
       <div className="flex flex-col gap-2 mt-14 pt-8 border-t border-(--border) text-center text-(--text-muted) text-sm">
         <p className="m-0 font-medium text-(--text-main)">
-          Paso {step} de {steps.length} — {steps[step - 1]}
+          Paso {step} de {STEPS.length} — {STEPS[step - 1]}
         </p>
         <p className="text-xs opacity-70">
           © {new Date().getFullYear()} Plataforma de Gestión de Reembolsos
