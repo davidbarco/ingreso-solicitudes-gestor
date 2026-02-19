@@ -1,21 +1,21 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  User, 
-  ChevronRight, 
-  ChevronLeft, 
-  Check, 
-  Stethoscope, 
-  Microscope, 
+import {
+  User,
+  ChevronRight,
+  ChevronLeft,
+  Check,
+  Stethoscope,
+  Microscope,
   Activity,
   Eye,
-  Receipt, 
-  FileText, 
-  CreditCard, 
-  Camera, 
-  Plus, 
-  Building2, 
+  Receipt,
+  FileText,
+  CreditCard,
+  Camera,
+  Plus,
+  Building2,
   Send,
   Loader2,
   AlertCircle,
@@ -26,19 +26,53 @@ import {
 } from 'lucide-react';
 import FormInput from './FormInput';
 
-const formatRut = (rut) => {
+interface FormFields {
+  firstName: string;
+  lastName: string;
+  rut: string;
+  email: string;
+  phone: string;
+  docRut: string;
+  centerRut: string;
+  amount: string;
+  date: string;
+  receiptNumber: string;
+  [key: string]: string;
+}
+
+interface FileEntry {
+  file?: File;
+  name: string;
+  preview: string;
+  size: string;
+}
+
+interface FilesState {
+  receipt: FileEntry | null;
+  additional: FileEntry | null;
+}
+
+interface SavedState {
+  formData?: Partial<FormFields>;
+  step?: number;
+  bankSelected?: boolean;
+  personSelected?: boolean;
+  filesMetadata?: FilesState;
+}
+
+const formatRut = (rut: string): string => {
   if (!rut) return "";
   let value = rut.replace(/\D/g, "");
   if (value.length < 2) return value;
-  
+
   const dv = value.slice(-1);
   const body = value.slice(0, -1);
-  
-  let formattedBody = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  const formattedBody = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   return `${formattedBody}-${dv}`;
 };
 
-const formatPhone = (phone) => {
+const formatPhone = (phone: string): string => {
   if (!phone) return "+56 9 ";
   let value = phone.replace(/\D/g, "");
   if (value.startsWith("569")) {
@@ -46,17 +80,17 @@ const formatPhone = (phone) => {
   } else if (value.startsWith("9")) {
     value = value.slice(1);
   }
-  
+
   const part1 = value.slice(0, 4);
   const part2 = value.slice(4, 8);
-  
+
   let res = "+56 9 ";
   if (part1) res += part1;
   if (part2) res += " " + part2;
   return res;
 };
 
-const validateRut = (rut) => {
+const validateRut = (rut: string): boolean => {
   if (!rut) return true;
   const cleanRut = rut.replace(/\./g, "").replace(/-/g, "");
   if (cleanRut.length < 8) return false;
@@ -68,7 +102,7 @@ const validateRut = (rut) => {
   let multiplier = 2;
 
   for (let i = body.length - 1; i >= 0; i--) {
-    sum += parseInt(body[i]) * multiplier;
+    sum += parseInt(body[i]!) * multiplier;
     multiplier = multiplier === 7 ? 2 : multiplier + 1;
   }
 
@@ -80,32 +114,32 @@ const validateRut = (rut) => {
 
 const MultiStepForm = () => {
   // Estabilizamos la carga inicial para evitar bucles
-  const [initialSaved] = useState(() => {
+  const [initialSaved] = useState<SavedState | null>(() => {
     const saved = localStorage.getItem('reimbursement_form');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        return JSON.parse(saved) as SavedState;
       } catch { return null; }
     }
     return null;
   });
 
-  const [step, setStep] = useState(initialSaved?.step || 1);
-  const [formData, setFormData] = useState(initialSaved?.formData || {});
-  const [files, setFiles] = useState(initialSaved?.filesMetadata || { receipt: null, additional: null });
+  const [step, setStep] = useState<number>(initialSaved?.step ?? 1);
+  const [formData, setFormData] = useState<Partial<FormFields>>(initialSaved?.formData ?? {});
+  const [files, setFiles] = useState<FilesState>(initialSaved?.filesMetadata ?? { receipt: null, additional: null });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [bankSelected, setBankSelected] = useState(initialSaved?.bankSelected || false);
-  const [personSelected, setPersonSelected] = useState(initialSaved?.personSelected || false);
-  const [isFileLoading, setIsFileLoading] = useState({ receipt: false, additional: false });
-  const receiptInputRef = useRef(null);
-  const additionalInputRef = useRef(null);
+  const [bankSelected, setBankSelected] = useState(initialSaved?.bankSelected ?? false);
+  const [personSelected, setPersonSelected] = useState(initialSaved?.personSelected ?? false);
+  const [isFileLoading, setIsFileLoading] = useState<Record<string, boolean>>({ receipt: false, additional: false });
+  const receiptInputRef = useRef<HTMLInputElement>(null);
+  const additionalInputRef = useRef<HTMLInputElement>(null);
 
-  const { register, handleSubmit, formState: { errors }, setValue, reset, watch } = useForm({
+  const { register, handleSubmit, formState: { errors }, setValue, reset, watch } = useForm<FormFields>({
     mode: "onBlur",
-    defaultValues: initialSaved?.formData || {}
+    defaultValues: (initialSaved?.formData ?? {}) as FormFields
   });
 
   const watchedFields = watch();
@@ -122,16 +156,16 @@ const MultiStepForm = () => {
 
   // Persistence logic: Save to localStorage
   useEffect(() => {
-    const filesMetadata = {
-      receipt: files.receipt ? { 
-        name: files.receipt.name, 
-        size: files.receipt.size, 
-        preview: files.receipt.preview // Guardamos el Base64 directamente
+    const filesMetadata: FilesState = {
+      receipt: files.receipt ? {
+        name: files.receipt.name,
+        size: files.receipt.size,
+        preview: files.receipt.preview
       } : null,
-      additional: files.additional ? { 
-        name: files.additional.name, 
-        size: files.additional.size, 
-        preview: files.additional.preview 
+      additional: files.additional ? {
+        name: files.additional.name,
+        size: files.additional.size,
+        preview: files.additional.preview
       } : null
     };
 
@@ -151,27 +185,27 @@ const MultiStepForm = () => {
   // Handle initial hydration (solo una vez al montar)
   useEffect(() => {
     if (initialSaved?.formData) {
-      reset(initialSaved.formData);
+      reset(initialSaved.formData as FormFields);
     }
-  }, [reset, initialSaved?.formData]); 
+  }, [reset, initialSaved?.formData]);
 
   // REHIDRATACIÓN: Convierte el Base64 de vuelta a objeto File para poder enviarlo
   useEffect(() => {
     const rehydrateFiles = async () => {
       if (!initialSaved?.filesMetadata) return;
-      
+
       const metadata = initialSaved.filesMetadata;
-      const updatedFiles = { receipt: null, additional: null };
+      const updatedFiles: FilesState = { receipt: null, additional: null };
       let hasUpdates = false;
 
-      const restore = async (key) => {
+      const restore = async (key: keyof FilesState) => {
         if (metadata[key]?.preview?.startsWith('data:')) {
           try {
-            const res = await fetch(metadata[key].preview);
+            const res = await fetch(metadata[key]!.preview);
             const blob = await res.blob();
             updatedFiles[key] = {
-              ...metadata[key],
-              file: new File([blob], metadata[key].name, { type: blob.type })
+              ...metadata[key]!,
+              file: new File([blob], metadata[key]!.name, { type: blob.type })
             };
             hasUpdates = true;
           } catch (err) {
@@ -189,8 +223,9 @@ const MultiStepForm = () => {
 
     rehydrateFiles();
   }, [initialSaved]); // Usamos initialSaved como dependencia estable
-  const handleFileChange = (e, type) => {
-    const file = e.target.files[0];
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>, type: keyof FilesState) => {
+    const file = e.target.files?.[0];
     if (file) {
       // Validaciones
       const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
@@ -211,26 +246,26 @@ const MultiStepForm = () => {
       }
 
       setIsFileLoading(prev => ({ ...prev, [type]: true }));
-      
-      const fileSizeFormatted = file.size < 1024 * 1024 
+
+      const fileSizeFormatted = file.size < 1024 * 1024
         ? `${(file.size / 1024).toFixed(1)} KB`
         : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
 
       // Convertir a Base64 para persistencia
       const reader = new FileReader();
       reader.onload = (event) => {
-        const base64Data = event.target.result;
-        
+        const base64Data = event.target?.result as string;
+
         // Simular carga con skeleton
         setTimeout(() => {
-          setFiles(prev => ({ 
-            ...prev, 
-            [type]: { 
-              file, 
-              name: file.name, 
-              preview: base64Data, 
-              size: fileSizeFormatted 
-            } 
+          setFiles(prev => ({
+            ...prev,
+            [type]: {
+              file,
+              name: file.name,
+              preview: base64Data,
+              size: fileSizeFormatted
+            }
           }));
           setIsFileLoading(prev => ({ ...prev, [type]: false }));
         }, 800);
@@ -239,18 +274,18 @@ const MultiStepForm = () => {
     }
   };
 
-  const nextStep = (data) => {
+  const nextStep = (data: Partial<FormFields>) => {
     setFormData(prev => ({ ...prev, ...data }));
     setStep(prev => prev + 1);
   };
 
   const prevStep = () => setStep(prev => prev - 1);
 
-  const onSubmit = async (finalData) => {
+  const onSubmit = async (finalData: Partial<FormFields>) => {
     // Usamos formData como base y mezclamos con finalData (que suele estar vacío en el paso 7)
     const fullData = { ...formData, ...finalData };
     console.log("Submitting full form data:", fullData);
-    
+
     // Preparar el objeto request según la estructura de Postman
     const requestBody = {
       tipologyCode: "REEMBOLSO-CONSULTAMEDICA",
@@ -277,7 +312,7 @@ const MultiStepForm = () => {
     const apiBody = new FormData();
     // Añadir el JSON como string en la llave 'request'
     apiBody.append('request', JSON.stringify(requestBody));
-    
+
     // Añadir archivos si existen
     if (files.receipt?.file) {
       apiBody.append('document', files.receipt.file);
@@ -298,17 +333,16 @@ const MultiStepForm = () => {
       }
 
       // Intentar parsear JSON, pero manejar si viene vacío
-      let result = {};
       const text = await response.text();
       if (text) {
         try {
-          result = JSON.parse(text);
+          const result = JSON.parse(text);
           console.log("Success:", result);
         } catch {
           console.warn("Response body is not JSON:", text);
         }
       }
-      
+
       // Mostrar el modal de éxito
       setShowSuccessModal(true);
     } catch (error) {
@@ -335,8 +369,8 @@ const MultiStepForm = () => {
   const renderStepHeader = () => (
     <div className="steps-container">
       {steps.map((label, index) => (
-        <div 
-          key={index} 
+        <div
+          key={index}
           className={`step-item ${step === index + 1 ? 'active' : ''} ${step > index + 1 ? 'completed' : ''}`}
         >
           <div className="step-number">
@@ -355,33 +389,33 @@ const MultiStepForm = () => {
       {/* Success Modal */}
       <AnimatePresence>
         {showSuccessModal && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ 
-              position: 'fixed', 
-              top: 0, 
-              left: 0, 
-              right: 0, 
-              bottom: 0, 
-              background: 'rgba(0,0,0,0.85)', 
-              zIndex: 1000, 
-              display: 'flex', 
-              alignItems: 'center', 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.85)',
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'center',
               padding: '2rem',
               backdropFilter: 'blur(10px)'
             }}
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              style={{ 
-                background: 'var(--bg-card)', 
-                width: '100%', 
-                maxWidth: '420px', 
-                borderRadius: '28px', 
+              style={{
+                background: 'var(--bg-card)',
+                width: '100%',
+                maxWidth: '420px',
+                borderRadius: '28px',
                 border: '1px solid var(--border)',
                 padding: '3rem 2rem',
                 boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.4)',
@@ -389,49 +423,49 @@ const MultiStepForm = () => {
                 margin: '1rem'
               }}
             >
-              <div style={{ 
-                width: '64px', 
-                height: '64px', 
-                borderRadius: '50%', 
-                background: 'rgba(34, 197, 94, 0.1)', 
-                color: '#22c55e', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'rgba(34, 197, 94, 0.1)',
+                color: '#22c55e',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 margin: '0 auto 1.5rem',
                 border: '1px solid rgba(34, 197, 94, 0.2)'
               }}>
                 <Check size={32} strokeWidth={2.5} />
               </div>
 
-              <h2 style={{ 
-                fontSize: '1.5rem', 
-                color: 'var(--text-main)', 
-                fontWeight: '700', 
-                marginBottom: '0.75rem', 
-                lineHeight: '1.2' 
+              <h2 style={{
+                fontSize: '1.5rem',
+                color: 'var(--text-main)',
+                fontWeight: '700',
+                marginBottom: '0.75rem',
+                lineHeight: '1.2'
               }}>
                 ¡Solicitud enviada con éxito!
               </h2>
-              
-              <p style={{ 
-                color: 'var(--text-muted)', 
-                fontSize: '0.95rem', 
+
+              <p style={{
+                color: 'var(--text-muted)',
+                fontSize: '0.95rem',
                 marginBottom: '2rem',
                 lineHeight: '1.5'
               }}>
                 Tu reembolso ha sido ingresado correctamente y está siendo procesado por nuestro equipo.
               </p>
 
-              <button 
-                style={{ 
-                  width: '100%', 
+              <button
+                style={{
+                  width: '100%',
                   padding: '1rem',
                   fontSize: '1rem'
                 }}
                 onClick={() => {
                   localStorage.removeItem('reimbursement_form');
-                  window.location.reload(); 
+                  window.location.reload();
                 }}
               >
                 Entendido
@@ -444,33 +478,33 @@ const MultiStepForm = () => {
       {/* Error Alert Modal */}
       <AnimatePresence>
         {showErrorModal && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ 
-              position: 'fixed', 
-              top: 0, 
-              left: 0, 
-              right: 0, 
-              bottom: 0, 
-              background: 'rgba(0,0,0,0.85)', 
-              zIndex: 1100, 
-              display: 'flex', 
-              alignItems: 'center', 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.85)',
+              zIndex: 1100,
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'center',
               padding: '2rem',
               backdropFilter: 'blur(10px)'
             }}
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              style={{ 
-                background: 'var(--bg-card)', 
-                width: '100%', 
-                maxWidth: '500px', 
-                borderRadius: '24px', 
+              style={{
+                background: 'var(--bg-card)',
+                width: '100%',
+                maxWidth: '500px',
+                borderRadius: '24px',
                 border: '1px solid var(--border)',
                 padding: '2rem 1.5rem',
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
@@ -478,29 +512,29 @@ const MultiStepForm = () => {
                 margin: '1rem'
               }}
             >
-              <div style={{ 
-                width: '64px', 
-                height: '64px', 
-                borderRadius: '50%', 
-                background: 'rgba(239, 68, 68, 0.1)', 
-                color: '#ef4444', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'rgba(239, 68, 68, 0.1)',
+                color: '#ef4444',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 margin: '0 auto 1.5rem'
               }}>
                 <AlertCircle size={32} />
               </div>
-              
+
               <h2 style={{ fontSize: '1.5rem', color: 'var(--text-main)', fontWeight: '700', marginBottom: '1rem' }}>
                 Atención
               </h2>
-              
+
               <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: '1.6' }}>
                 {errorMessage}
               </p>
 
-              <button 
+              <button
                 style={{ width: '100%', padding: '1rem', background: '#ef4444', border: 'none' }}
                 onClick={() => setShowErrorModal(false)}
               >
@@ -525,7 +559,7 @@ const MultiStepForm = () => {
             <form onSubmit={handleSubmit(nextStep)}>
               <h2 style={{ marginBottom: '1.5rem' }}>Datos Personales</h2>
               <div className="responsive-grid grid-2">
-                <FormInput
+                <FormInput<FormFields>
                   label="Nombre"
                   name="firstName"
                   placeholder="Tu nombre"
@@ -533,7 +567,7 @@ const MultiStepForm = () => {
                   errors={errors}
                   validation={{ required: "Campo obligatorio" }}
                 />
-                <FormInput
+                <FormInput<FormFields>
                   label="Apellido"
                   name="lastName"
                   placeholder="Tu apellido"
@@ -542,13 +576,13 @@ const MultiStepForm = () => {
                   validation={{ required: "Campo obligatorio" }}
                 />
               </div>
-              <FormInput
+              <FormInput<FormFields>
                 label="RUT"
                 name="rut"
                 placeholder="12.345.678-9"
                 register={register}
                 errors={errors}
-                validation={{ 
+                validation={{
                   required: "El RUT es obligatorio",
                   validate: (v) => validateRut(v) || "El RUT ingresado no es válido"
                 }}
@@ -557,14 +591,14 @@ const MultiStepForm = () => {
                   setValue('rut', formatted, { shouldValidate: true });
                 }}
               />
-              <FormInput
+              <FormInput<FormFields>
                 label="Correo"
                 name="email"
                 type="email"
                 placeholder="correo@ejemplo.com"
                 register={register}
                 errors={errors}
-                validation={{ 
+                validation={{
                   required: "El correo es obligatorio",
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -572,13 +606,13 @@ const MultiStepForm = () => {
                   }
                 }}
               />
-              <FormInput
+              <FormInput<FormFields>
                 label="Teléfono"
                 name="phone"
                 placeholder="+56 9 1234 5678"
                 register={register}
                 errors={errors}
-                validation={{ 
+                validation={{
                   required: "El teléfono es obligatorio",
                   pattern: {
                     value: /^\+56\s?9\s?\d{4}\s?\d{4}$/,
@@ -605,13 +639,13 @@ const MultiStepForm = () => {
               <p style={{ marginBottom: '2rem', fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
                 Tu solicitud de reembolso será resuelta en hasta 7 días hábiles. En el caso de prestaciones hospitalarias, el plazo puede extenderse hasta 20 días hábiles.
               </p>
-              
-              <div 
+
+              <div
                 role="button"
-                tabIndex="0"
+                tabIndex={0}
                 aria-pressed={personSelected}
                 aria-label={`Seleccionar a ${formData.firstName} ${formData.lastName} como beneficiario`}
-                className={`selectable-card ${personSelected ? 'selected' : ''}`} 
+                className={`selectable-card ${personSelected ? 'selected' : ''}`}
                 onClick={() => setPersonSelected(true)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -619,8 +653,8 @@ const MultiStepForm = () => {
                     setPersonSelected(true);
                   }
                 }}
-                style={{ 
-                  maxWidth: '400px', 
+                style={{
+                  maxWidth: '400px',
                   margin: '0 auto',
                   border: personSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
                   position: 'relative',
@@ -637,13 +671,13 @@ const MultiStepForm = () => {
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{formData.email}</p>
                 </div>
                 <div className="badge">Titular</div>
-                
+
                 {personSelected ? (
-                  <div style={{ 
-                    marginTop: '1.5rem', 
-                    color: 'var(--primary)', 
-                    display: 'flex', 
-                    alignItems: 'center', 
+                  <div style={{
+                    marginTop: '1.5rem',
+                    color: 'var(--primary)',
+                    display: 'flex',
+                    alignItems: 'center',
                     justifyContent: 'center',
                     gap: '4px',
                     fontWeight: '600'
@@ -651,8 +685,8 @@ const MultiStepForm = () => {
                     <Check size={18} /> Seleccionado
                   </div>
                 ) : (
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="secondary"
                     style={{ marginTop: '1.5rem', width: '100%', pointerEvents: 'none' }}
                   >
@@ -665,9 +699,9 @@ const MultiStepForm = () => {
                 <button type="button" className="secondary" onClick={prevStep}>
                   <ChevronLeft size={18} /> Volver
                 </button>
-                <button 
-                  type="button" 
-                  onClick={() => nextStep({})} 
+                <button
+                  type="button"
+                  onClick={() => nextStep({})}
                   disabled={!personSelected}
                   style={{
                     opacity: personSelected ? 1 : 0.5,
@@ -685,11 +719,11 @@ const MultiStepForm = () => {
             <div>
               <h2 style={{ marginBottom: '0.5rem' }}>Tipo de Servicio</h2>
               <p style={{ marginBottom: '2rem' }}>Selecciona el tipo de atención médica recibida.</p>
-              
+
               <div className="grid-cards">
-                <div 
+                <div
                   role="button"
-                  tabIndex="0"
+                  tabIndex={0}
                   aria-pressed={formData.serviceType === 'consultas'}
                   aria-label="Seleccionar Consultas Médicas"
                   className={`selectable-card ${formData.serviceType === 'consultas' ? 'selected' : ''}`}
@@ -714,11 +748,11 @@ const MultiStepForm = () => {
                 </div>
 
                 {['Exámenes e Imágenes', 'Dental', 'Óptica'].map((item) => (
-                  <div 
-                    key={item} 
+                  <div
+                    key={item}
                     className="selectable-card disabled"
                     role="button"
-                    tabIndex="-1"
+                    tabIndex={-1}
                     aria-disabled="true"
                     aria-label={`${item} (Próximamente)`}
                   >
@@ -736,9 +770,9 @@ const MultiStepForm = () => {
                 <button type="button" className="secondary" onClick={prevStep}>
                   <ChevronLeft size={18} /> Volver
                 </button>
-                <button 
-                  type="button" 
-                  onClick={() => nextStep({})} 
+                <button
+                  type="button"
+                  onClick={() => nextStep({})}
                   disabled={!formData.serviceType}
                   style={{
                     opacity: formData.serviceType ? 1 : 0.5,
@@ -756,11 +790,11 @@ const MultiStepForm = () => {
             <div>
               <h2 style={{ marginBottom: '0.5rem' }}>Tipo de Comprobante</h2>
               <p style={{ marginBottom: '2rem' }}>Indica el documento que adjuntarás para el reembolso.</p>
-              
+
               <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-                <div 
+                <div
                   role="button"
-                  tabIndex="0"
+                  tabIndex={0}
                   aria-pressed={formData.receiptType === 'boletas'}
                   aria-label="Seleccionar Otras Boletas"
                   className={`selectable-card ${formData.receiptType === 'boletas' ? 'selected' : ''}`}
@@ -785,11 +819,11 @@ const MultiStepForm = () => {
                 </div>
 
                 {['Bonos Fonasa', 'Bonos Isapre', 'Órdenes médicas'].map((item) => (
-                  <div 
-                    key={item} 
+                  <div
+                    key={item}
                     className="selectable-card disabled"
                     role="button"
-                    tabIndex="-1"
+                    tabIndex={-1}
                     aria-disabled="true"
                     aria-label={`${item} (Próximamente)`}
                   >
@@ -807,9 +841,9 @@ const MultiStepForm = () => {
                 <button type="button" className="secondary" onClick={prevStep}>
                   <ChevronLeft size={18} /> Volver
                 </button>
-                <button 
-                  type="button" 
-                  onClick={() => nextStep({})} 
+                <button
+                  type="button"
+                  onClick={() => nextStep({})}
                   disabled={!formData.receiptType}
                   style={{
                     opacity: formData.receiptType ? 1 : 0.5,
@@ -833,26 +867,26 @@ const MultiStepForm = () => {
               nextStep(data);
             })}>
               <h2 style={{ marginBottom: '1.5rem' }}>Detalles de la Boleta</h2>
-              
+
               <div className="responsive-grid grid-2">
-                <FormInput
+                <FormInput<FormFields>
                   label="RUT Médico"
                   name="docRut"
                   placeholder="12.345.678-9"
                   register={register}
                   errors={errors}
-                  validation={{ 
+                  validation={{
                     required: "RUT médico requerido",
                     validate: (v) => validateRut(v) || "RUT inválido"
                   }}
                 />
-                <FormInput
+                <FormInput<FormFields>
                   label="RUT Centro Médico"
                   name="centerRut"
                   placeholder="76.000.000-0"
                   register={register}
                   errors={errors}
-                  validation={{ 
+                  validation={{
                     required: "RUT centro requerido",
                     validate: (v) => validateRut(v) || "RUT inválido"
                   }}
@@ -860,7 +894,7 @@ const MultiStepForm = () => {
               </div>
 
               <div className="responsive-grid grid-3">
-                <FormInput
+                <FormInput<FormFields>
                   label="Monto"
                   name="amount"
                   type="number"
@@ -869,7 +903,7 @@ const MultiStepForm = () => {
                   errors={errors}
                   validation={{ required: "Monto requerido", min: { value: 1, message: "Monto debe ser mayor a 0" } }}
                 />
-                <FormInput
+                <FormInput<FormFields>
                   label="Fecha"
                   name="date"
                   type="date"
@@ -877,7 +911,7 @@ const MultiStepForm = () => {
                   errors={errors}
                   validation={{ required: "Fecha requerida" }}
                 />
-                <FormInput
+                <FormInput<FormFields>
                   label="N° Boleta"
                   name="receiptNumber"
                   placeholder="12345"
@@ -888,20 +922,20 @@ const MultiStepForm = () => {
               </div>
 
               {/* Información sobre carga de archivos */}
-              <div style={{ 
-                background: 'rgba(220, 38, 38, 0.05)', 
-                border: '1px solid rgba(220, 38, 38, 0.1)', 
-                borderRadius: '16px', 
-                padding: '1.25rem', 
+              <div style={{
+                background: 'rgba(220, 38, 38, 0.05)',
+                border: '1px solid rgba(220, 38, 38, 0.1)',
+                borderRadius: '16px',
+                padding: '1.25rem',
                 marginTop: '1.5rem',
                 display: 'flex',
                 gap: '1rem',
                 alignItems: 'flex-start'
               }}>
-                <div style={{ 
-                  background: 'rgba(220, 38, 38, 0.1)', 
-                  color: 'var(--primary)', 
-                  padding: '8px', 
+                <div style={{
+                  background: 'rgba(220, 38, 38, 0.1)',
+                  color: 'var(--primary)',
+                  padding: '8px',
                   borderRadius: '10px',
                   display: 'flex'
                 }}>
@@ -914,10 +948,10 @@ const MultiStepForm = () => {
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
                     Todos los documentos que cargues deben tener las siguientes cualidades:
                   </p>
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                    gap: '0.6rem 1.5rem' 
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '0.6rem 1.5rem'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                       <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} /> Imagen Limpia
@@ -940,23 +974,23 @@ const MultiStepForm = () => {
 
               <div className="responsive-grid grid-2" style={{ marginTop: '1.5rem' }}>
                 {/* Receipt Upload */}
-                <div 
-                  className="upload-card" 
-                  onClick={() => receiptInputRef.current.click()}
+                <div
+                  className="upload-card"
+                  onClick={() => receiptInputRef.current?.click()}
                   role="button"
-                  tabIndex="0"
+                  tabIndex={0}
                   aria-label="Subir foto de la boleta (Obligatorio)"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      receiptInputRef.current.click();
+                      receiptInputRef.current?.click();
                     }
                   }}
                 >
-                  <input 
-                    type="file" 
-                    hidden 
-                    ref={receiptInputRef} 
+                  <input
+                    type="file"
+                    hidden
+                    ref={receiptInputRef}
                     onChange={(e) => handleFileChange(e, 'receipt')}
                     accept="image/*,application/pdf"
                   />
@@ -989,23 +1023,23 @@ const MultiStepForm = () => {
                 </div>
 
                 {/* Additional Upload */}
-                <div 
-                  className="upload-card" 
-                  onClick={() => additionalInputRef.current.click()}
+                <div
+                  className="upload-card"
+                  onClick={() => additionalInputRef.current?.click()}
                   role="button"
-                  tabIndex="0"
+                  tabIndex={0}
                   aria-label="Subir documento adicional (Opcional)"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      additionalInputRef.current.click();
+                      additionalInputRef.current?.click();
                     }
                   }}
                 >
-                  <input 
-                    type="file" 
-                    hidden 
-                    ref={additionalInputRef} 
+                  <input
+                    type="file"
+                    hidden
+                    ref={additionalInputRef}
                     onChange={(e) => handleFileChange(e, 'additional')}
                     accept="image/*,application/pdf"
                   />
@@ -1054,12 +1088,12 @@ const MultiStepForm = () => {
             <div>
               <h2 style={{ marginBottom: '0.5rem' }}>Selecciona la cuenta de destino del reembolso</h2>
               <p style={{ marginBottom: '2rem' }}>Los fondos serán depositados en la siguiente cuenta:</p>
-              
-              <div 
-                className={`selectable-card ${bankSelected ? 'selected' : ''}`} 
+
+              <div
+                className={`selectable-card ${bankSelected ? 'selected' : ''}`}
                 onClick={() => setBankSelected(true)}
                 role="button"
-                tabIndex="0"
+                tabIndex={0}
                 aria-pressed={bankSelected}
                 aria-label="Seleccionar cuenta bancaria del Banco Santander Chile"
                 onKeyDown={(e) => {
@@ -1068,7 +1102,7 @@ const MultiStepForm = () => {
                     setBankSelected(true);
                   }
                 }}
-                style={{ 
+                style={{
                   background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
                   color: 'white',
                   border: bankSelected ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.2)',
@@ -1086,18 +1120,18 @@ const MultiStepForm = () => {
                 <div style={{ position: 'absolute', top: '-20px', right: '-20px', opacity: 0.2 }}>
                   <Building2 size={120} />
                 </div>
-                
+
                 <div style={{ position: 'relative', zIndex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2.5rem' }}>
                     <h3 style={{ color: 'white', fontSize: '1.3rem', fontWeight: '700', letterSpacing: '-0.5px' }}>Banco Santander</h3>
                     <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', padding: '6px 14px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase' }}>Chile</div>
                   </div>
-                  
+
                   <div style={{ marginBottom: '1.5rem' }}>
                     <label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem', display: 'block' }}>Titular</label>
                     <span style={{ fontSize: '1.1rem', fontWeight: '600' }}>Pedro Gonzalez</span>
                   </div>
-                  
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
                     <div>
                       <label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem', display: 'block' }}>Cuenta Corriente</label>
@@ -1106,14 +1140,14 @@ const MultiStepForm = () => {
                   </div>
 
                   {bankSelected ? (
-                    <div style={{ 
-                      marginTop: '2rem', 
-                      background: '#ffffff', 
+                    <div style={{
+                      marginTop: '2rem',
+                      background: '#ffffff',
                       color: 'var(--primary)',
-                      borderRadius: '14px', 
-                      padding: '1rem', 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                      borderRadius: '14px',
+                      padding: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'center',
                       gap: '10px',
                       fontWeight: '700',
@@ -1122,11 +1156,11 @@ const MultiStepForm = () => {
                       <Check size={22} strokeWidth={3} /> Cuenta Seleccionada
                     </div>
                   ) : (
-                    <div style={{ 
-                      marginTop: '1.5rem', 
-                      background: 'rgba(255,255,255,0.05)', 
-                      borderRadius: '12px', 
-                      padding: '0.75rem', 
+                    <div style={{
+                      marginTop: '1.5rem',
+                      background: 'rgba(255,255,255,0.05)',
+                      borderRadius: '12px',
+                      padding: '0.75rem',
                       textAlign: 'center',
                       fontSize: '0.9rem',
                       fontWeight: '500',
@@ -1137,44 +1171,44 @@ const MultiStepForm = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="responsive-grid grid-2" style={{ marginTop: '2rem' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem', display: 'block' }}>Correo electrónico</label>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    background: 'rgba(255,255,255,0.05)', 
-                    border: '1px solid var(--border)', 
-                    borderRadius: '12px', 
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '12px',
                     padding: '0.75rem 1rem',
                     gap: '0.75rem'
                   }}>
                     <Mail size={18} color="var(--text-muted)" />
-                    <input 
-                      disabled 
-                      value="pedro.gonzalez@gmail.com" 
+                    <input
+                      disabled
+                      value="pedro.gonzalez@gmail.com"
                       style={{ background: 'none', border: 'none', color: 'var(--text-main)', width: '100%', outline: 'none', fontSize: '0.9rem' }}
                     />
                     <Pencil size={14} color="var(--primary)" style={{ opacity: 0.5 }} />
                   </div>
                 </div>
-                
+
                 <div className="form-group">
                   <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem', display: 'block' }}>Teléfono celular</label>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    background: 'rgba(255,255,255,0.05)', 
-                    border: '1px solid var(--border)', 
-                    borderRadius: '12px', 
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '12px',
                     padding: '0.75rem 1rem',
                     gap: '0.75rem'
                   }}>
                     <Phone size={18} color="var(--text-muted)" />
-                    <input 
-                      disabled 
-                      value="967047364" 
+                    <input
+                      disabled
+                      value="967047364"
                       style={{ background: 'none', border: 'none', color: 'var(--text-main)', width: '100%', outline: 'none', fontSize: '0.9rem' }}
                     />
                     <Pencil size={14} color="var(--primary)" style={{ opacity: 0.5 }} />
@@ -1186,9 +1220,9 @@ const MultiStepForm = () => {
                 <button type="button" className="secondary" onClick={prevStep}>
                   <ChevronLeft size={18} /> Volver
                 </button>
-                <button 
-                  type="button" 
-                  onClick={() => nextStep({})} 
+                <button
+                  type="button"
+                  onClick={() => nextStep({})}
                   disabled={!bankSelected}
                   style={{
                     opacity: bankSelected ? 1 : 0.5,
@@ -1206,15 +1240,15 @@ const MultiStepForm = () => {
             <div>
               <h2 style={{ marginBottom: '0.5rem' }}>Resumen de Solicitud</h2>
               <p style={{ marginBottom: '2rem' }}>Verifica que todos los datos sean correctos antes de enviar.</p>
-              
+
               <div className="summary-container">
                 <div className="summary-group">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h4 style={{ margin: 0 }}>Información Personal</h4>
-                    <button 
-                      type="button" 
-                      onClick={() => setStep(1)} 
-                      className="secondary" 
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="secondary"
                       style={{ padding: '0.4rem', borderRadius: '50%', width: '32px', height: '32px' }}
                       aria-label="Editar información personal"
                     >
@@ -1245,10 +1279,10 @@ const MultiStepForm = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h4 style={{ margin: 0 }}>Atención y Pago</h4>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button 
-                        type="button" 
-                        onClick={() => setStep(3)} 
-                        className="secondary" 
+                      <button
+                        type="button"
+                        onClick={() => setStep(3)}
+                        className="secondary"
                         style={{ padding: '0.4rem', borderRadius: '50%', width: '32px', height: '32px' }}
                         aria-label="Editar tipo de servicio"
                       >
@@ -1271,10 +1305,10 @@ const MultiStepForm = () => {
                 <div className="summary-group">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h4 style={{ margin: 0 }}>Datos de la Boleta</h4>
-                    <button 
-                      type="button" 
-                      onClick={() => setStep(5)} 
-                      className="secondary" 
+                    <button
+                      type="button"
+                      onClick={() => setStep(5)}
+                      className="secondary"
                       style={{ padding: '0.4rem', borderRadius: '50%', width: '32px', height: '32px' }}
                       aria-label="Editar datos de la boleta"
                     >
@@ -1338,10 +1372,10 @@ const MultiStepForm = () => {
                 <div className="summary-group">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h4 style={{ margin: 0 }}>Datos de depósito</h4>
-                    <button 
-                      type="button" 
-                      onClick={() => setStep(6)} 
-                      className="secondary" 
+                    <button
+                      type="button"
+                      onClick={() => setStep(6)}
+                      className="secondary"
                       style={{ padding: '0.4rem', borderRadius: '50%', width: '32px', height: '32px' }}
                       aria-label="Editar datos de depósito"
                     >
@@ -1373,15 +1407,15 @@ const MultiStepForm = () => {
                 <button type="button" className="secondary" onClick={prevStep}>
                   <ChevronLeft size={18} /> Volver
                 </button>
-                <button 
-                  type="button" 
-                  onClick={handleSubmit(onSubmit)} 
+                <button
+                  type="button"
+                  onClick={handleSubmit(onSubmit)}
                   disabled={isSubmitting}
                   style={{ background: 'var(--primary-hover)', paddingLeft: '2.5rem', paddingRight: '2.5rem', minWidth: '180px' }}
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 size={18} className="spinner" /> 
+                      <Loader2 size={18} className="spinner" />
                       Enviando...
                     </>
                   ) : (
@@ -1396,8 +1430,8 @@ const MultiStepForm = () => {
         </motion.div>
       </AnimatePresence>
 
-      <div style={{ 
-        marginTop: '3.5rem', 
+      <div style={{
+        marginTop: '3.5rem',
         paddingTop: '2rem',
         borderTop: '1px solid var(--border)',
         textAlign: 'center',
