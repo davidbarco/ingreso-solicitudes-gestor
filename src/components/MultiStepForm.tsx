@@ -330,6 +330,7 @@ const MultiStepForm = () => {
               <h2 className="mb-6">Datos Personales</h2>
               <div className="responsive-grid grid-2">
                 <FormInput<FormFields>
+                  type="text"
                   label="Nombre"
                   name="firstName"
                   placeholder="Tu nombre"
@@ -338,6 +339,7 @@ const MultiStepForm = () => {
                   validation={{ required: "Campo obligatorio" }}
                 />
                 <FormInput<FormFields>
+                  type="text"
                   label="Apellido"
                   name="lastName"
                   placeholder="Tu apellido"
@@ -347,6 +349,7 @@ const MultiStepForm = () => {
                 />
               </div>
               <FormInput<FormFields>
+                type="text"
                 label="RUT"
                 name="rut"
                 placeholder="12.345.678-9"
@@ -377,6 +380,7 @@ const MultiStepForm = () => {
                 }}
               />
               <FormInput<FormFields>
+                type="tel"
                 label="Teléfono"
                 name="phone"
                 placeholder="+56 9 1234 5678"
@@ -614,6 +618,7 @@ const MultiStepForm = () => {
 
               <div className="responsive-grid grid-2">
                 <FormInput<FormFields>
+                  type="text"
                   label="RUT Médico"
                   name="docRut"
                   placeholder="12.345.678-9"
@@ -623,8 +628,13 @@ const MultiStepForm = () => {
                     required: "RUT médico requerido",
                     validate: (v) => validateRut(v) || "RUT inválido"
                   }}
+                  onChange={(e) => {
+                    const formatted = formatRut(e.target.value);
+                    setValue('docRut', formatted, { shouldValidate: true });
+                  }}
                 />
                 <FormInput<FormFields>
+                  type="text"
                   label="RUT Centro Médico"
                   name="centerRut"
                   placeholder="76.000.000-0"
@@ -633,6 +643,10 @@ const MultiStepForm = () => {
                   validation={{
                     required: "RUT centro requerido",
                     validate: (v) => validateRut(v) || "RUT inválido"
+                  }}
+                  onChange={(e) => {
+                    const formatted = formatRut(e.target.value);
+                    setValue('centerRut', formatted, { shouldValidate: true });
                   }}
                 />
               </div>
@@ -656,6 +670,7 @@ const MultiStepForm = () => {
                   validation={{ required: "Fecha requerida" }}
                 />
                 <FormInput<FormFields>
+                  type="number"
                   label="N° Boleta"
                   name="receiptNumber"
                   placeholder="12345"
