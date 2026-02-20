@@ -1,0 +1,26 @@
+{
+  "projects": {
+    "develop": "seiza-ingresos-preprod",
+    "qa": "seiza-ingresos-preprod",
+    "production": "seiza-ingresos-prod"
+  },
+  "targets": {
+    "seiza-ingresos-preprod": {
+      "hosting": {
+        "develop": [
+          "dev-ingreso-solicitudes"
+        ],
+        "qa": [
+          "qa-ingreso-solicitudes"
+        ]
+      }
+    },
+    "seiza-ingresos-prod": {
+      "hosting": {
+        "production": [
+          "ingreso-solicitudes"
+        ]
+      }
+    }
+  }
+}

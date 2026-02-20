@@ -1,0 +1,44 @@
+image: node:20
+
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Build and Deploy to Production
+          caches:
+            - node
+          script:
+            - npm ci
+            - npm run lint
+            - npm run build -- --mode production
+            - npx firebase deploy --only hosting:production --project production --token "$FIREBASE_TOKEN"
+    qa:
+      - step:
+          name: Build and Deploy to QA
+          caches:
+            - node
+          script:
+            - npm ci
+            - npm run lint
+            - npm run build -- --mode qa
+            - npx firebase deploy --only hosting:qa --project qa --token "$FIREBASE_TOKEN"
+    develop:
+      - step:
+          name: Build and Deploy to Development
+          caches:
+            - node
+          script:
+            - npm ci
+            - npm run lint
+            - npm run build -- --mode development
+            - npx firebase deploy --only hosting:develop --project develop --token "$FIREBASE_TOKEN"
+  pull-requests:
+    "**":
+      - step:
+          name: CI Check
+          caches:
+            - node
+          script:
+            - npm ci
+            - npm run lint
+            - npm run test
